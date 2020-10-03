@@ -15,7 +15,6 @@ const ModelSection: React.FC<Props> = ({
 }) => {
   return (
     <Container {...props}>
-      <h1>ModelSection</h1>
     </Container>
   );
 };
