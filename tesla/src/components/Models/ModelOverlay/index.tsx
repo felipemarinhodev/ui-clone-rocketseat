@@ -1,4 +1,5 @@
 import React, { useCallback, useLayoutEffect, useState } from 'react';
+import { useTransform } from 'framer-motion';
 import { CarModel } from '../ModelsContext';
 import useWrapperScroll from '../useWrapperScroll';
 
@@ -11,8 +12,7 @@ interface Props {
 type SectionDimensions = Pick<HTMLDivElement, 'offsetTop' | 'offsetHeight'>
 
 const ModelOverlay: React.FC<Props> = ({model, children}) => {
-  const { scrollY } = useWrapperScroll();
-  
+    
   const getSectionDimentions = useCallback(() => {
     const dimentions = model.sectionRef.current
     return {
@@ -27,17 +27,32 @@ const ModelOverlay: React.FC<Props> = ({model, children}) => {
 
   useLayoutEffect(() => {
     function onResize() {
-      const data = getSectionDimentions()
-      console.log(data);
-      window.requestAnimationFrame(() => setDimentions(data))
+      const windowDimensions = getSectionDimentions()
+      window.requestAnimationFrame(() => setDimentions(windowDimensions))
     }
 
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [getSectionDimentions])
+
+  const { scrollY } = useWrapperScroll();
+
+  const sectionScrollProgress = useTransform(
+    scrollY, 
+    y => (y - dimensions.offsetTop) / dimensions.offsetHeight)
+
+  const opacity = useTransform(
+    sectionScrollProgress,
+    [-0.42, -0.05, 0.05, 0.42],
+    [0, 1, 1, 0]
+  )
   
+  const pointerEvents = useTransform(opacity, value => 
+    value > 0 ? 'auto' : 'none'
+  )
+
   return (
-    <Container>
+    <Container style={{ opacity, pointerEvents }}>
       {children}
     </Container>
   );
